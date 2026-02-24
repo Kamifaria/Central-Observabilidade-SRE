@@ -1,0 +1,30 @@
+name: Observability Lint
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  yaml-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run yamllint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+
+  security:
+    runs-on: ubuntu-latest
+    needs: yaml-lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy vulnerability scanner on config files
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          hide-progress: false
+          format: "table"
+          severity: "CRITICAL,HIGH"
